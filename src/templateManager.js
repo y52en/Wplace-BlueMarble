@@ -370,7 +370,7 @@ export default class TemplateManager {
                   // IF the alpha of the center pixel that is placed on the canvas is greater than or equal to 64, AND the pixel is a Wplace palette color, then it is incorrect.
                   if (pa >= 64 && isSiteColor) {
                     wrongCount++;
-                    wrongPixels.push({ x: gx, y: gy, r: tr, g: tg, b: tb });
+                    wrongPixels.push({ x: gx, y: gy, r: templatePixelCenterRed, g: templatePixelCenterGreen, b: templatePixelCenterBlue });
                   }
                 } catch (ignored) {}
 
@@ -408,7 +408,7 @@ export default class TemplateManager {
                 paintedCount++; // ...the pixel is painted correctly
               } else {
                 wrongCount++; // ...the pixel is NOT painted correctly
-                wrongPixels.push({ x: gx, y: gy, r: tr, g: tg, b: tb });
+                wrongPixels.push({ x: gx, y: gy, r: templatePixelCenterRed, g: templatePixelCenterGreen, b: templatePixelCenterBlue });
               }
             }
           }
