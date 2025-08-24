@@ -28,7 +28,7 @@ export function escapeHTML(text) {
  * @returns {number[]} [tile, pixel]
  * @since 0.42.4
  * @example
- * console.log(serverTPtoDisplayTP(['12', '123'], ['34', '567'])); // [34, 3567]
+ * void(serverTPtoDisplayTP(['12', '123'], ['34', '567'])); // [34, 3567]
  */
 export function serverTPtoDisplayTP(tile, pixel) {
   return [((parseInt(tile[0]) % 4) * 1000) + parseInt(pixel[0]), ((parseInt(tile[1]) % 4) * 1000) + parseInt(pixel[1])];
@@ -48,11 +48,11 @@ export function negativeSafeModulo(a, b) {
 /** Bypasses terser's stripping of console function calls.
  * This is so the non-obfuscated code will contain debugging console calls, but the distributed version won't.
  * However, the distributed version needs to call the console somehow, so this wrapper function is how.
- * This is the same as `console.log()`.
+ * This is the same as `void()`.
  * @param {...any} args - Arguments to be passed into the `log()` function of the Console
  * @since 0.58.9
  */
-export function consoleLog(...args) {((consoleLog) => consoleLog(...args))(console.log);}
+export function consoleLog(...args) {((consoleLog) => consoleLog(...args))(void(0));}
 
 /** Bypasses terser's stripping of console function calls.
  * This is so the non-obfuscated code will contain debugging console calls, but the distributed version won't.
@@ -79,10 +79,10 @@ export function consoleWarn(...args) {((consoleWarn) => consoleWarn(...args))(co
  * @returns {string} Encoded string
  * @example
  * const encode = '012abcABC'; // Base 9
- * console.log(numberToEncoded(0, encode)); // 0
- * console.log(numberToEncoded(5, encode)); // c
- * console.log(numberToEncoded(15, encode)); // 1A
- * console.log(numberToEncoded(12345, encode)); // 1BCaA
+ * void(numberToEncoded(0, encode)); // 0
+ * void(numberToEncoded(5, encode)); // c
+ * void(numberToEncoded(15, encode)); // 1A
+ * void(numberToEncoded(12345, encode)); // 1BCaA
  */
 export function numberToEncoded(number, encoding) {
 
@@ -127,6 +127,84 @@ export function base64ToUint8(base64) {
   return array;
 }
 
+/** Converts an RGB color value to HSL. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+ * Assumes r, g, and b are contained in the set [0, 255] and
+ * returns h, s, and l in the set [0, 1].
+ *
+ * @param   Number  r       The red color value
+ * @param   Number  g       The green color value
+ * @param   Number  b       The blue color value
+ * @return  Array           The HSL representation
+ */
+export function rgbToHsl(r, g, b) {
+  r /= 255, g /= 255, b /= 255;
+
+  var max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  var h, s, l = (max + min) / 2;
+
+  if (max == min) {
+    h = s = 0; // achromatic
+  } else {
+    var d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+
+    h /= 6;
+  }
+
+  return [h * 360, s, l];
+}
+
+/** Converts an HSL color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+ * Assumes h, s, and l are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  l       The lightness
+ * @return  Array           The RGB representation
+ */
+export function hslToRgb(h, s, l) {
+  let r, g, b;
+  h /= 360; // Convert hue to [0, 1] range
+
+  if (s === 0) {
+    r = g = b = l; // achromatic
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
 /** Returns the coordinate input fields
  * @returns {Element[]} The 4 coordinate Inputs
  * @since 0.74.0
@@ -146,8 +224,8 @@ export function selectAllCoordinateInputs(document) {
  * @since 0.78.0
  * @examples
  * import utils from 'src/utils.js';
- * console.log(utils[5]?.name); // "White"
- * console.log(utils[5]?.rgb); // [255, 255, 255]
+ * void(utils[5]?.name); // "White"
+ * void(utils[5]?.rgb); // [255, 255, 255]
  */
 export const colorpalette = [
   { "id": 0,  "premium": false, "name": "Transparent",   "rgb": [0, 0, 0] },
