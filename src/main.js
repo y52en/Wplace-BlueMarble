@@ -495,6 +495,16 @@ function buildOverlayMain() {
       // .addCheckbox({'id': 'bm-input-possessed', 'textContent': 'Possessed', 'checked': true}).buildElement()
       // .addButtonHelp({'title': 'Controls the website as if it were possessed.'}).buildElement()
       // .addBr().buildElement()
+      .addCheckbox({'id': 'bm-input-wrong-checker', 'textContent': 'Show Wrong Pixel Checker', 'checked': (userSettings.drawWrongChecker ?? true)}, (instance, checkbox) => {
+        checkbox.addEventListener('change', (e) => {
+          const value = e.target.checked;
+          templateManager.setDrawWrongChecker(value);
+          userSettings.drawWrongChecker = value;
+          GM.setValue('bmUserSettings', JSON.stringify(userSettings));
+          instance.handleDisplayStatus(`Wrong pixel checker ${value ? 'enabled' : 'disabled'}.`);
+        });
+      }).buildElement()
+      .addBr().buildElement()
       .addDiv({'id': 'bm-contain-coords'})
         .addButton({'id': 'bm-button-coords', 'className': 'bm-help', 'style': 'margin-top: 0;', 'innerHTML': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 6"><circle cx="2" cy="2" r="2"></circle><path d="M2 6 L3.7 3 L0.3 3 Z"></path><circle cx="2" cy="2" r="0.7" fill="white"></circle></svg></svg>'},
           (instance, button) => {
@@ -637,6 +647,9 @@ function buildOverlayMain() {
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
+
+  // Initialize the checkerboard state
+  templateManager.setDrawWrongChecker(userSettings.drawWrongChecker ?? true);
 
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = function buildColorFilterList() {

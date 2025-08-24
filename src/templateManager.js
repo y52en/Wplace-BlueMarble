@@ -61,6 +61,7 @@ export default class TemplateManager {
     this.templatesArray = []; // All Template instnaces currently loaded (Template)
     this.templatesJSON = null; // All templates currently loaded (JSON)
     this.templatesShouldBeDrawn = true; // Should ALL templates be drawn to the canvas?
+    this.drawWrongChecker = true; // Should a checkerboard be drawn on wrong pixels?
     this.tileProgress = new Map(); // Tracks per-tile progress stats {painted, required, wrong}
   }
 
@@ -370,7 +371,7 @@ export default class TemplateManager {
                   // IF the alpha of the center pixel that is placed on the canvas is greater than or equal to 64, AND the pixel is a Wplace palette color, then it is incorrect.
                   if (pa >= 64 && isSiteColor) {
                     wrongCount++;
-                    wrongPixels.push({ x: gx, y: gy, r: templatePixelCenterRed, g: templatePixelCenterGreen, b: templatePixelCenterBlue });
+                    wrongPixels.push({ x: gx, y: gy });
                   }
                 } catch (ignored) {}
 
@@ -408,7 +409,7 @@ export default class TemplateManager {
                 paintedCount++; // ...the pixel is painted correctly
               } else {
                 wrongCount++; // ...the pixel is NOT painted correctly
-                wrongPixels.push({ x: gx, y: gy, r: templatePixelCenterRed, g: templatePixelCenterGreen, b: templatePixelCenterBlue });
+                wrongPixels.push({ x: gx, y: gy });
               }
             }
           }
@@ -490,31 +491,21 @@ export default class TemplateManager {
       }
     }
 
-    // Draw checkerboard for wrong pixels
-    for (const wrongPixel of wrongPixels) {
-      const { x, y, r, g, b } = wrongPixel;
+    // Draw checkerboard for wrong pixels if enabled
+    if (this.drawWrongChecker) {
+      for (const wrongPixel of wrongPixels) {
+        const { x, y } = wrongPixel;
 
-      const [h, s, l] = rgbToHsl(r, g, b);
 
-      let contrastingColorRgb;
-      if (s < 0.05) { // 無彩色の場合
-        contrastingColorRgb = l > 0.5 ? [0, 0, 0] : [255, 255, 255];
-      } else { // 有彩色の場合
-        const complementaryH = (h + 180) % 360;
-        const adjustedS = Math.min(s, 0.7);
-        // 明度を大きくずらすロジック
-        const adjustedL = l > 0.5 ? 0.2 : 0.8;
-        contrastingColorRgb = hslToRgb(complementaryH, adjustedS, adjustedL);
-      }
+        const color1 = `rgb(0,0,0)`;
+        const color2 = `rgb(255,255,255)`;
 
-      const color1 = `rgb(${r}, ${g}, ${b})`;
-      const color2 = `rgb(${contrastingColorRgb[0]}, ${contrastingColorRgb[1]}, ${contrastingColorRgb[2]})`;
-
-      // Draw 3x3 checkerboard pattern
-      for (let i = 0; i < this.drawMult; i++) {
-        for (let j = 0; j < this.drawMult; j++) {
-          context.fillStyle = ((i + j) % 2 === 0) ? color1 : color2;
-          context.fillRect(x - 1 + i, y - 1 + j, 1, 1);
+        // Draw 3x3 checkerboard pattern
+        for (let i = 0; i < this.drawMult; i++) {
+          for (let j = 0; j < this.drawMult; j++) {
+            context.fillStyle = ((i + j) % 2 === 0) ? color1 : color2;
+            context.fillRect(x - 1 + i, y - 1 + j, 1, 1);
+          }
         }
       }
     }
@@ -703,5 +694,13 @@ export default class TemplateManager {
    */
   setTemplatesShouldBeDrawn(value) {
     this.templatesShouldBeDrawn = value;
+  }
+
+  /** Sets the `drawWrongChecker` boolean to a value.
+   * @param {boolean} value - The value to set the boolean to
+   * @since 0.78.1
+   */
+  setDrawWrongChecker(value) {
+    this.drawWrongChecker = value;
   }
 }
